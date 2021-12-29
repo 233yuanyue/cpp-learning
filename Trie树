@@ -1,0 +1,91 @@
+#include<iostream>
+#include<memory>
+#include<string>
+#include<vector>
+using namespace std;
+/*Trie(try)树，又称单词查找树或键树(也叫前缀树(Prefix Tree))，是一种树形结构，是一种哈希树的变种。
+典型应用是用于统计和排序大量的字符串(但不仅限于字符串),所以经常被搜索引擎用于文本词频统计
+
+Trie的核心思想是空间换时间。利用字符串的公共前缀来降低查询时间的开销
+已达到效率的目的，特点：
+	- 插入和查询时间复杂度都为O(k),其中k为key的长度，与Trie中
+		保存了多少个元素无关
+基本性质：
+	1、根节点不包含字符
+	2、除根节点外每个结点都只包含一个字符
+	3、从根节点到某一节点，路径上经过的字符连接起来为该节点对应的字符串，
+		每个结点的所有子节点包含的字符都不相同
+*/
+/*
+复杂度分析：
+时间复杂度：初始化为 O(1)，其余操作为 O(|S|)，其中∣S∣是每次插入或查询的字符串的长度。
+空间复杂度：O(∣T∣⋅Σ)，其中∣T∣ 为所有插入字符串的长度之和，Σ为字符集的大小,均为小写英文字符时Σ=26
+
+要求：
+1、实现一个查询只包含小写英文字符的Trie
+2、 - insert()                        //插入单词
+	- search(word)                    //查找是否有指定单词
+	- startswith(prefix)              //查找是否存在该字符前缀
+*/
+class Trie
+{
+public:
+	Trie() :next(26,nullptr), isEnd(false) {}
+
+	void insert(string word) {
+		Trie* node = this;
+		for (char ch : word) {
+			ch -= 'a';
+			if (node->next[ch].get() == nullptr) {
+				node->next[ch].reset(new Trie());
+			}
+			node = node->next[ch].get();
+		}
+		node->isEnd = true;
+	}
+
+	bool search(string word) {
+		Trie* node = this->searchPrefix(word);
+		return node != nullptr && node->isEnd;
+	}
+
+	bool startsWith(string prefix) {
+		return this->searchPrefix(prefix) != nullptr;
+	}
+
+private:
+	Trie* searchPrefix(string word) {
+		Trie* node = this;
+		for (char ch : word) {
+			ch -= 'a';
+			Trie* tp = node->next[ch].get();
+			if (tp == nullptr) {
+				return nullptr;
+			}
+			node = tp;
+		}
+		return node;
+	}
+	vector<shared_ptr<Trie>> next;
+	bool isEnd;
+};
+
+void test()
+{
+	Trie pt;
+	pt.insert("cat");
+	pt.insert("coffee");
+	pt.insert("hello");
+	cout << boolalpha << pt.search("cat")
+		<< " " << pt.startsWith("hell") << " "
+		<< pt.startsWith("hello") <<" "
+		<<pt.startsWith("cast") << noboolalpha << endl;
+}
+
+int main()
+{
+	test();
+
+	system("pause");
+	return 0;
+}
